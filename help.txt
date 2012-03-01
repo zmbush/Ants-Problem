@@ -1,0 +1,13 @@
+lib/ants.jar contains all the core java files which your Ant implementation needs. (Ant, Action, Direction, Surroundings, Tile)
+
+/AntsSimulator.jar is an executable JAR which will let you test your Ant implementation.
+
+
+Simulator FAQ
+--------------
+
+Q: What do I do if I get the message: "No compiler was found -- try using a .class file instead."
+
+A: You can either compile your ant file yourself and then give the simulator the class file, or you can try running the simulator via command line. (java -jar AntsSimulator.jar)
+
+
