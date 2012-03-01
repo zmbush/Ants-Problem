@@ -5,7 +5,7 @@ public class SimpleAnt implements Ant{
 
   @Override
   public Action getAction(Surroundings surroundings){
-    return Action.HALT;
+    return Action.move(Direction.NORTH);
   }
 
   @Override
