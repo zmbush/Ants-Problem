@@ -1,20 +1,20 @@
-.PHONY: all clean
+.PHONY: all clean html
 
 ANTS := SimpleAnt MappingAnt
 CLASSDIR := bin/
 
-all: $(addprefix $(CLASSDIR), $(addsuffix .class, $(ANTS))) html/index.html
+all: $(addprefix $(CLASSDIR), $(addsuffix .class, $(ANTS)))
 
-html/index.html: $(addsuffix .java, $(ANTS)) 
-	@javadoc $^ -d html 2> /dev/null
+html: $(addsuffix .java, $(ANTS)) 
+	javadoc -private -classpath lib/ants.jar $^ -d html
 
 $(CLASSDIR)%.class: %.java $(CLASSDIR)
 	javac -cp lib/ants.jar -d $(CLASSDIR) $<
 
 $(CLASSDIR):
-	-@mkdir $(CLASSDIR)
+	-mkdir $(CLASSDIR)
 
 clean:
-	-@rm -rf $(CLASSDIR)
-	-@rm -rf html
+	-rm -rf $(CLASSDIR)
+	-rm -rf html
 
