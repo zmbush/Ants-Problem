@@ -1,6 +1,9 @@
 .PHONY: all
 
-all: SimpleAnt.class MappingAnt.class
+all: html SimpleAnt.class MappingAnt.class
+
+html:
+	javadoc *.java -d html
 
 %.class: %.java
 	javac -cp lib/ants.jar $<
