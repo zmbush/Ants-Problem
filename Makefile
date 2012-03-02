@@ -1,9 +1,11 @@
 .PHONY: all
 
-all: html SimpleAnt.class MappingAnt.class
+ANTS := SimpleAnt MappingAnt
 
-html:
-	javadoc *.java -d html
+all: html/index.html $(addsuffix .class, $(ANTS))
+
+html/index.html: $(addsuffix .java, $(ANTS)) 
+	javadoc $^ -d html
 
 %.class: %.java
 	javac -cp lib/ants.jar $<
