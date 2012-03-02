@@ -1,6 +1,6 @@
 .PHONY: all clean html
 
-ANTS := SimpleAnt MappingAnt
+ANTS := SimpleAnt MappingAnt WorldMap
 CLASSDIR := bin/
 
 all: $(addprefix $(CLASSDIR), $(addsuffix .class, $(ANTS)))
