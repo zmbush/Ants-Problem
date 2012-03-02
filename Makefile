@@ -15,6 +15,6 @@ $(CLASSDIR):
 	mkdir $(CLASSDIR)
 
 clean:
-	rm -rf $(CLASSDI)
+	rm -rf $(CLASSDIR)
 	rm -rf html
 
