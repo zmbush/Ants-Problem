@@ -1,6 +1,17 @@
 import ants.*;
 
 public class MappingAnt implements Ant{
+  /**
+   * This class is classy
+   */
+  private class WorldMap{
+    int[][] lastSeenTimeStep;
+    Tile[][] seenTiles;
+    int centerx;
+    int centery;
+    WorldMap(){
+    }
+  }
   private boolean hasFood = false;
 
   @Override
