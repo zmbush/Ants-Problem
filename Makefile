@@ -6,15 +6,20 @@ CLASSDIR := bin/
 all: $(addprefix $(CLASSDIR), $(addsuffix .class, $(ANTS)))
 
 html: $(addsuffix .java, $(ANTS)) 
-	javadoc -private -classpath lib/ants.jar $^ -d html
+	@echo Creating JavaDoc Files
+	@javadoc -private -classpath lib/ants.jar $^ -d html
 
 $(CLASSDIR)%.class: %.java $(CLASSDIR)
-	javac -cp lib/ants.jar -d $(CLASSDIR) $<
+	@echo Compiling $< to $@
+	@javac -cp lib/ants.jar -d $(CLASSDIR) $<
 
 $(CLASSDIR):
-	-mkdir $(CLASSDIR)
+	@echo Creating $(CLASSDIR)
+	-@mkdir $(CLASSDIR)
 
 clean:
-	-rm -rf $(CLASSDIR)
-	-rm -rf html
+	@echo Removing $(CLASSDIR)
+	-@rm -rf $(CLASSDIR)
+	@echo Removing html
+	-@rm -rf html
 
