@@ -3,7 +3,7 @@
 ANTS := WorldMap SimpleAnt MappingAnt
 CLASSDIR := ./
 
-all: $(addprefix $(CLASSDIR), $(addsuffix .class, $(ANTS)))
+all: $(addsuffix .class, $(ANTS))
 
 html: $(addsuffix .java, $(ANTS)) 
 	@echo Creating JavaDoc Files
