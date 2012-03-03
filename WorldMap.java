@@ -173,31 +173,106 @@ public class WorldMap{
    * Analyze the current world and decides possible moves for our ant to take.
    * @param x The x distance from the anthill
    * @param y the y distance from the anthill
+   * @param hasFood True if the ant is currently carrying food
    * @return An array of possible moves for the ant
    */
-  public Action[] getPossibleMoves(int x, int y){
+  public Move[] getPossibleMoves(int x, int y, boolean hasFood){
     int xc = x + centerx;
     int yc = y + centery;
 
-    ArrayList<Action> retval = new ArrayList<Action>();
+    ArrayList<Move> retval = new ArrayList<Move>();
 
+    if(validPosition(x, y-1)){
+      if(!walls[yc-1][xc] && lastSeenTimeStep[yc-1][xc] >= 0){
+        retval.add(new Move(Action.move(Direction.NORTH), 
+                            new Position(x, y-1)));
+      }
+    }
+    if(validPosition(x, y+1)){
+      if(!walls[yc+1][xc] && lastSeenTimeStep[yc+1][xc] >= 0){
+        retval.add(new Move(Action.move(Direction.SOUTH), 
+                            new Position(x, y-1)));
+      }
+    }
+    if(validPosition(x+1, y)){
+      if(!walls[yc][xc+1] && lastSeenTimeStep[yc][xc+1] >= 0){
+        retval.add(new Move(Action.move(Direction.EAST), 
+                            new Position(x+1, y)));
+      }
+    }
+    if(validPosition(x-1, y)){
+      if(!walls[yc][xc-1] && lastSeenTimeStep[yc][xc-1] >= 0){
+        retval.add(new Move(Action.move(Direction.WEST), 
+                            new Position(x-1, y)));
+      }
+    }
 
-    if(!walls[yc-1][xc]){
-      retval.add(Action.move(Direction.NORTH));
-    }
-    if(!walls[yc][xc+1]){
-      retval.add(Action.move(Direction.EAST));
-    }
-    if(!walls[yc+1][xc]){
-      retval.add(Action.move(Direction.SOUTH));
-    }
-    if(!walls[yc][xc-1]){
-      retval.add(Action.move(Direction.WEST));
-    }
+    retval.add(new Move(Action.HALT, new Position(x,y)));
+    //if(this.foodAmounts[yc][xc] > 0 && !hasFood){
+      //retval.add(new Move(Action.GATHER, new Position(x,y)));
+    // }else if(hasFood){
+      // retval.add(new Move(Action.DROP_OFF, new Position(x,y)));
+    // } 
 
-    retval.add(Action.HALT);
+    return retval.toArray(new Move[0]);
+  }
 
-    return retval.toArray(new Action[0]);
+  public int getFood(int x, int y){
+    if(validPosition(x,y)){
+      return this.foodAmounts[y + centery][x + centerx];
+    }else{
+      return 0;
+    }
+  }
+
+  private boolean validPosition(int x, int y){
+    int cx = x + centerx;
+    int cy = y + centery;
+
+    if(cx < 0) return false;
+    if(cy < 0) return false;
+    if(cx >= walls[0].length) return false;
+    if(cy >= walls.length) return false;
+    return true;
+  }
+
+  public boolean validMove(Action a, int x, int y, boolean hasFood){
+    int cx = x + centerx;
+    int cy = y + centery;
+
+    if(!validPosition(x, y)) return false;
+
+    if(a == Action.HALT){
+      return true;
+    }else if(a == Action.GATHER){
+      return this.foodAmounts[cy][cx] > 0;
+    }else if(a == Action.DROP_OFF){
+      return hasFood;
+    }else{
+      switch(a.getDirection()){
+        case NORTH:
+          if(validPosition(x, y-1)){
+            return (!this.walls[cy - 1][cx]);
+          }
+          return false;
+        case EAST:
+          if(validPosition(x+1, y)){
+            return (!this.walls[cy][cx + 1]);
+          }
+          return false;
+        case SOUTH:
+          if(validPosition(x, y+1)){
+            return (!this.walls[cy + 1][cx]);
+          }
+          return false;
+        case WEST:
+          if(validPosition(x-1, y)){
+            return (!this.walls[cy][cx - 1]);
+          }
+          return false;
+      }
+    }
+    return false;
   }
 
   /**
