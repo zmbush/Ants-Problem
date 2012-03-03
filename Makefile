@@ -1,7 +1,7 @@
 .PHONY: all clean html
 
-ANTS := SimpleAnt MappingAnt WorldMap
-CLASSDIR := bin/
+ANTS := WorldMap SimpleAnt MappingAnt
+CLASSDIR := ./
 
 all: $(addprefix $(CLASSDIR), $(addsuffix .class, $(ANTS)))
 
@@ -9,9 +9,9 @@ html: $(addsuffix .java, $(ANTS))
 	@echo Creating JavaDoc Files
 	@javadoc -private -classpath lib/ants.jar $^ -d html
 
-$(CLASSDIR)%.class: %.java $(CLASSDIR)
+%.class: %.java $(CLASSDIR)
 	@echo Compiling $< to $@
-	@javac -cp lib/ants.jar -d $(CLASSDIR) $<
+	@javac -cp '.:lib/ants.jar'  $<
 
 $(CLASSDIR):
 	@echo Creating $(CLASSDIR)
