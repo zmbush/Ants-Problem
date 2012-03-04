@@ -240,28 +240,24 @@ public class WorldMap{
             return (!this.walls[cy - 1][cx] 
                     && this.lastSeenTimeStep[cy-1][cx] >= 0);
           }
-          System.out.println("Invalid Move.");
           return false;
         case EAST:
           if(validPosition(x+1, y)){
             return (!this.walls[cy][cx + 1]
                     && this.lastSeenTimeStep[cy][cx+1] >= 0);
           }
-          System.out.println("Invalid Move.");
           return false;
         case SOUTH:
           if(validPosition(x, y+1)){
             return (!this.walls[cy + 1][cx]
                     && this.lastSeenTimeStep[cy+1][cx] >= 0);
           }
-          System.out.println("Invalid Move.");
           return false;
         case WEST:
           if(validPosition(x-1, y)){
             return (!this.walls[cy][cx - 1]
                     && this.lastSeenTimeStep[cy][cx-1] >= 0);
           }
-          System.out.println("Invalid Move.");
           return false;
       }
     }

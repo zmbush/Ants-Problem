@@ -7,6 +7,11 @@ public class Position{
     this.y = y;
   }
 
+  Position(Position old){
+    this.x = old.x;
+    this.y = old.y;
+  }
+
   public int getX(){
     return x;
   }

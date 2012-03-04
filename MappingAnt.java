@@ -1,5 +1,6 @@
 import ants.*;
 import java.lang.Math;
+import java.util.ArrayDeque;
 import java.util.Stack;
 import java.util.Hashtable;
 
@@ -9,7 +10,7 @@ public class MappingAnt implements Ant{
   private int x = 0;
   private int y = 0;
   private WorldMap map = new WorldMap(5);
-  private Stack<Action> plan = new Stack<Action>();
+  private ArrayDeque<Action> plan;
   private boolean planInAction = false;
   private int goalx = 0;
   private int goaly = 0;
@@ -29,7 +30,7 @@ public class MappingAnt implements Ant{
       plan = findFoodPlan();
       return this.makeMove(Action.DROP_OFF);
     }
-    if(plan == null || plan.empty()){
+    if(plan == null || plan.isEmpty()){
       if(!hasFood){
         plan = findFoodPlan();
       }else{
@@ -44,6 +45,7 @@ public class MappingAnt implements Ant{
                          ") " + nextMove.getDirection());
       System.out.println(map);
       System.out.println();
+      System.exit(0);
       plan = null;
       return this.makeMove(Action.HALT);
     }
@@ -77,11 +79,11 @@ public class MappingAnt implements Ant{
 
   private class PartialPlan{
     public Position p;
-    public Stack<Action> moves;
+    public ArrayDeque<Action> moves;
 
     PartialPlan(Position p){
       this.p = p;
-      moves = new Stack<Action>();
+      moves = new ArrayDeque<Action>();
     }
 
     public int getX(){
@@ -93,10 +95,9 @@ public class MappingAnt implements Ant{
     }
 
     public PartialPlan planWithMove(Move m){
-      PartialPlan retval = new PartialPlan(m.getPosition());
-      Object oldMoves = this.moves.clone();
-      retval.moves = (Stack<Action>)this.moves.clone();
-      retval.moves.push(m.getAction());
+      PartialPlan retval = new PartialPlan(new Position(m.getPosition()));
+      retval.moves = new ArrayDeque<Action>(this.moves);
+      retval.moves.add(m.getAction());
       return retval;
     }
 
@@ -109,7 +110,7 @@ public class MappingAnt implements Ant{
     }
   }
 
-  private Stack<Action> findFoodPlan(){
+  private ArrayDeque<Action> findFoodPlan(){
     return searchForGoal(new SearchGoal(){
       @Override
       public boolean isGoal(Position p){
@@ -124,7 +125,7 @@ public class MappingAnt implements Ant{
     });
   }
 
-  private Stack<Action> deliverFoodPlan(){
+  private ArrayDeque<Action> deliverFoodPlan(){
     return searchForGoal(new SearchGoal(){
       @Override
       public boolean isGoal(Position p){
@@ -138,38 +139,37 @@ public class MappingAnt implements Ant{
     });
   }
 
-  private Stack<Action> searchForGoal(SearchGoal g){
+  private ArrayDeque<Action> searchForGoal(SearchGoal g){
     // PriorityQueue<Position> fringe = new PriorityQueue<Position>(20, c);
-    Stack<PartialPlan> fringe = new Stack<PartialPlan>();
+    ArrayDeque<PartialPlan> fringe = new ArrayDeque<PartialPlan>();
     Hashtable<Position, Boolean> closedSet = new Hashtable<Position, Boolean>();
     PartialPlan start = new PartialPlan(new Position(this.x, this.y));
     boolean debug = false;
     if(debug)
       System.out.println(map);
     fringe.push(start);
-    while(!fringe.empty()){
-      PartialPlan consider = fringe.pop();
+    while(!fringe.isEmpty()){
+      PartialPlan consider = fringe.remove();
       Move[] successors = map.getPossibleMoves(consider.getX(), 
                                                consider.getY(),
                                                hasFood);
-      System.out.println(successors);
       if(closedSet.put(consider.getPosition(), true) == null){
         if(g.isGoal(consider.getPosition())){
           return consider.moves;
         }
         for(Move successor : successors){
           PartialPlan newPlan = consider.planWithMove(successor);
-          fringe.push(newPlan);
+          fringe.add(newPlan);
           if(debug)
             System.out.println("Pushed: " + newPlan);
         }
       }
     }
     System.out.println("No path to " + g.planName() + " found. Using fallback");
-    Stack<Action> backup = new Stack<Action>();
+    ArrayDeque<Action> backup = new ArrayDeque<Action>();
     Move[] p = map.getPossibleMoves(x, y, hasFood);
     int index = (int)(Math.random() * p.length);
-    backup.push(p[index].getAction());
+    backup.add(p[index].getAction());
     return backup;
   }
 
