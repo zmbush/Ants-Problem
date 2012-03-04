@@ -56,7 +56,7 @@ public class Position{
 
   /**
    * Tests if this position is equal to another object.
-   * @param object the object we are comparing to.
+   * @param other the object we are comparing to.
    * @return true if the object is equivalent.
    */
   public boolean equals(Object other){
