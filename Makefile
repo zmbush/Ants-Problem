@@ -1,13 +1,14 @@
 .PHONY: all clean html
 
 ANTS := SimpleAnt MappingAnt
+AUX := Position Move
 CLASSDIR := ./
 
 all: $(addsuffix .class, $(ANTS))
 
-html: $(addsuffix .java, $(ANTS)) 
+html: $(addsuffix .java, $(ANTS)) $(addsuffix .java, $(AUX))
 	@echo Creating JavaDoc Files
-	@javadoc -private -classpath lib/ants.jar $^ -d html
+	@javadoc -private -classpath '.:lib/ants.jar' $^ -d html
 
 %.class: %.java $(CLASSDIR)
 	@echo Compiling $< to $@
@@ -18,8 +19,8 @@ $(CLASSDIR):
 	-@mkdir $(CLASSDIR)
 
 clean:
-	@echo Removing $(CLASSDIR)
-	-@rm -rf $(CLASSDIR)
+	@echo Removing Class Files
+	-@rm -rf *.class
 	@echo Removing html
 	-@rm -rf html
 
