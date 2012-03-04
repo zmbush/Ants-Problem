@@ -202,6 +202,12 @@ public class WorldMap{
     return retval.toArray(new Move[0]);
   }
 
+  /**
+   * Returns the amount of food at the given coordinates.
+   * @param x The x distance from the anthill
+   * @param y the y distance from the anthill
+   * @return the amount of food at a given square
+   */
   public int getFood(int x, int y){
     if(validPosition(x,y)){
       return this.foodAmounts[y + centery][x + centerx];
@@ -210,6 +216,13 @@ public class WorldMap{
     }
   }
 
+  /**
+   * Returns wether or not the coordinates are within the current squares. This
+   * keeps us from addressing outside the arrays.
+   * @param x the x distance from the anthill
+   * @param y the y distance from the anthill
+   * @return If the coordinates lie within the internal arrays.
+   */
   private boolean validPosition(int x, int y){
     int cx = x + centerx;
     int cy = y + centery;
@@ -221,6 +234,15 @@ public class WorldMap{
     return true;
   }
 
+  /**
+   * Determines if the move can be taken. For example, if there is no food in a
+   * square, then gather is not a valid action. 
+   * @param a The action being tested
+   * @param x the x distance from the anthill
+   * @param y the y distance from the anthill
+   * @param hasFood Wether or not the ant is carrying food.
+   * @return Wether or not the ant will be able to make this action
+   */
   public boolean validMove(Action a, int x, int y, boolean hasFood){
     int cx = x + centerx;
     int cy = y + centery;
@@ -230,7 +252,7 @@ public class WorldMap{
     if(a == Action.HALT){
       return true;
     }else if(a == Action.GATHER){
-      return this.foodAmounts[cy][cx] > 0;
+      return this.foodAmounts[cy][cx] > 0 && !hasFood;
     }else if(a == Action.DROP_OFF){
       return hasFood;
     }else{
@@ -273,6 +295,8 @@ public class WorldMap{
     String retval = "";
     int minx = 999, miny = 999;
     int maxx = -999, maxy = -999;
+
+    // Find the minimum/maximum x and y values.
     for(int y = 0; y < this.walls.length; y++){
       for(int x = 0; x < this.walls[y].length; x++){
         if(this.lastSeenTimeStep[y][x] >= 0){
@@ -283,6 +307,8 @@ public class WorldMap{
         }
       }
     }
+
+    // Draw the map within the min/max x/y values
     for(int y = miny; y <= maxy; y++){
       int[] seenRow = this.lastSeenTimeStep[y];
       boolean[] wallRow = this.walls[y];
