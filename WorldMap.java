@@ -182,37 +182,22 @@ public class WorldMap{
 
     ArrayList<Move> retval = new ArrayList<Move>();
 
-    if(validPosition(x, y-1)){
-      if(!walls[yc-1][xc] && lastSeenTimeStep[yc-1][xc] >= 0){
-        retval.add(new Move(Action.move(Direction.NORTH), 
-                            new Position(x, y-1)));
-      }
+    if(validMove(Action.move(Direction.NORTH), x, y, hasFood)){
+      retval.add(new Move(Action.move(Direction.NORTH), 
+                          new Position(x, y-1)));
     }
-    if(validPosition(x, y+1)){
-      if(!walls[yc+1][xc] && lastSeenTimeStep[yc+1][xc] >= 0){
-        retval.add(new Move(Action.move(Direction.SOUTH), 
-                            new Position(x, y-1)));
-      }
+    if(validMove(Action.move(Direction.EAST), x, y, hasFood)){
+      retval.add(new Move(Action.move(Direction.EAST), 
+                          new Position(x+1, y)));
     }
-    if(validPosition(x+1, y)){
-      if(!walls[yc][xc+1] && lastSeenTimeStep[yc][xc+1] >= 0){
-        retval.add(new Move(Action.move(Direction.EAST), 
-                            new Position(x+1, y)));
-      }
+    if(validMove(Action.move(Direction.SOUTH), x, y, hasFood)){
+      retval.add(new Move(Action.move(Direction.SOUTH), 
+                          new Position(x, y+1)));
     }
-    if(validPosition(x-1, y)){
-      if(!walls[yc][xc-1] && lastSeenTimeStep[yc][xc-1] >= 0){
-        retval.add(new Move(Action.move(Direction.WEST), 
-                            new Position(x-1, y)));
-      }
+    if(validMove(Action.move(Direction.WEST), x, y, hasFood)){
+      retval.add(new Move(Action.move(Direction.WEST), 
+                          new Position(x-1, y)));
     }
-
-    retval.add(new Move(Action.HALT, new Position(x,y)));
-    //if(this.foodAmounts[yc][xc] > 0 && !hasFood){
-      //retval.add(new Move(Action.GATHER, new Position(x,y)));
-    // }else if(hasFood){
-      // retval.add(new Move(Action.DROP_OFF, new Position(x,y)));
-    // } 
 
     return retval.toArray(new Move[0]);
   }
@@ -252,23 +237,31 @@ public class WorldMap{
       switch(a.getDirection()){
         case NORTH:
           if(validPosition(x, y-1)){
-            return (!this.walls[cy - 1][cx]);
+            return (!this.walls[cy - 1][cx] 
+                    && this.lastSeenTimeStep[cy-1][cx] >= 0);
           }
+          System.out.println("Invalid Move.");
           return false;
         case EAST:
           if(validPosition(x+1, y)){
-            return (!this.walls[cy][cx + 1]);
+            return (!this.walls[cy][cx + 1]
+                    && this.lastSeenTimeStep[cy][cx+1] >= 0);
           }
+          System.out.println("Invalid Move.");
           return false;
         case SOUTH:
           if(validPosition(x, y+1)){
-            return (!this.walls[cy + 1][cx]);
+            return (!this.walls[cy + 1][cx]
+                    && this.lastSeenTimeStep[cy+1][cx] >= 0);
           }
+          System.out.println("Invalid Move.");
           return false;
         case WEST:
           if(validPosition(x-1, y)){
-            return (!this.walls[cy][cx - 1]);
+            return (!this.walls[cy][cx - 1]
+                    && this.lastSeenTimeStep[cy][cx-1] >= 0);
           }
+          System.out.println("Invalid Move.");
           return false;
       }
     }

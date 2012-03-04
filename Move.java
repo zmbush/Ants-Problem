@@ -15,4 +15,8 @@ public class Move{
   public Position getPosition(){
     return p;
   }
+
+  public String toString(){
+    return a.toString() + " -> " + p;
+  }
 }

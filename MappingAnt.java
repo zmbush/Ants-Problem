@@ -40,6 +40,10 @@ public class MappingAnt implements Ant{
     if(map.validMove(nextMove, x, y, hasFood)){
       return this.makeMove(nextMove);
     }else{
+      System.out.println("Plan attempted an invalid move. (" + x + ", " + y +
+                         ") " + nextMove.getDirection());
+      System.out.println(map);
+      System.out.println();
       plan = null;
       return this.makeMove(Action.HALT);
     }
@@ -101,7 +105,7 @@ public class MappingAnt implements Ant{
 		}
 
     public String toString(){
-      return p.toString();
+      return "Partial Plan: " + p + " " +  moves;
     }
   }
 
@@ -139,12 +143,16 @@ public class MappingAnt implements Ant{
     Stack<PartialPlan> fringe = new Stack<PartialPlan>();
     Hashtable<Position, Boolean> closedSet = new Hashtable<Position, Boolean>();
     PartialPlan start = new PartialPlan(new Position(this.x, this.y));
+    boolean debug = false;
+    if(debug)
+      System.out.println(map);
     fringe.push(start);
     while(!fringe.empty()){
       PartialPlan consider = fringe.pop();
       Move[] successors = map.getPossibleMoves(consider.getX(), 
                                                consider.getY(),
                                                hasFood);
+      System.out.println(successors);
       if(closedSet.put(consider.getPosition(), true) == null){
         if(g.isGoal(consider.getPosition())){
           return consider.moves;
@@ -152,10 +160,12 @@ public class MappingAnt implements Ant{
         for(Move successor : successors){
           PartialPlan newPlan = consider.planWithMove(successor);
           fringe.push(newPlan);
+          if(debug)
+            System.out.println("Pushed: " + newPlan);
         }
       }
     }
-    System.out.println("No path to goal found. Using fallback");
+    System.out.println("No path to " + g.planName() + " found. Using fallback");
     Stack<Action> backup = new Stack<Action>();
     Move[] p = map.getPossibleMoves(x, y, hasFood);
     int index = (int)(Math.random() * p.length);
