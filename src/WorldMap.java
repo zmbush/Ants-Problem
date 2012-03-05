@@ -1,5 +1,8 @@
 import ants.*;
+import java.io.DataOutputStream;
+import java.io.DataInputStream;
 import java.util.ArrayList;
+import java.io.IOException;
 
 public class WorldMap{
 
@@ -56,6 +59,9 @@ public class WorldMap{
     System.out.println(testWorld);
   }
 
+  WorldMap(){
+    this(20);
+  }
   /**
    * Primary constructor. Initializes all necessary variables to their
    * appropriate sizes. 
@@ -75,6 +81,51 @@ public class WorldMap{
     this.centery = size / 2;
   }
 
+
+  public void adjustTimes(int previousStep, int newStep){
+    int difference = newStep - previousStep;
+    for(int y = 0; y < this.lastSeenTimeStep.length; y++){
+      for(int x = 0; x < this.lastSeenTimeStep[y].length; x++){
+        this.lastSeenTimeStep[y][x] += difference;
+      }
+    }
+  }
+
+
+  public void serializeMap(DataOutputStream dataWriter) throws IOException{
+    dataWriter.writeInt(this.walls.length);
+    dataWriter.writeInt(this.walls[0].length);
+    dataWriter.writeInt(this.centerx);
+    dataWriter.writeInt(this.centery);
+    for(int y = 0; y < this.lastSeenTimeStep.length; y++){
+      for(int x = 0; x < this.lastSeenTimeStep[y].length; x++){
+        dataWriter.writeInt(this.lastSeenTimeStep[y][x]);
+        dataWriter.writeInt(this.foodAmounts[y][x]);
+        dataWriter.writeInt(this.antAmounts[y][x]);
+        dataWriter.writeBoolean(this.walls[y][x]);
+      }
+    }
+  }
+
+  public void deserializeMap(DataInputStream dataReader) throws IOException{
+    int height = dataReader.readInt();
+    int width = dataReader.readInt();
+    this.centerx = dataReader.readInt();
+    this.centery = dataReader.readInt();
+    this.lastSeenTimeStep = new int[height][width];
+    this.walls = new boolean[height][width];
+    this.foodAmounts = new int[height][width];
+    this.antAmounts = new int[height][width];
+    for(int y = 0; y < this.lastSeenTimeStep.length; y++){
+      for(int x = 0; x < this.lastSeenTimeStep[y].length; x++){
+        this.lastSeenTimeStep[y][x] = dataReader.readInt();
+        this.foodAmounts[y][x] = dataReader.readInt();
+        this.antAmounts[y][x] = dataReader.readInt();
+        this.walls[y][x] = dataReader.readBoolean();
+      }
+    }
+  }
+
   /**
    * Updates a position on the map with the specified tile. Calls the generic
    * version of updateMap after reading necessary information from the tile.
@@ -91,14 +142,6 @@ public class WorldMap{
                           timestep);
   }
 
-  public void adjustTimes(int previousStep, int newStep){
-    int difference = newStep - previousStep;
-    for(int y = 0; y < this.lastSeenTimeStep.length; y++){
-      for(int x = 0; x < this.lastSeenTimeStep[y].length; x++){
-        this.lastSeenTimeStep[y][x] += difference;
-      }
-    }
-  }
 
   /**
    * Actually updates the values of the many arrays that hold the information

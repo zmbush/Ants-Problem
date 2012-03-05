@@ -3,7 +3,11 @@ import java.lang.Math;
 import java.util.ArrayDeque;
 import java.util.Stack;
 import java.util.Hashtable;
-import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 /**
  * This is an ant that maps the world around it to get a good idea where to
@@ -101,25 +105,38 @@ public class MappingAnt implements Ant{
 
   @Override
   public byte[] send(){
-    ArrayList<Byte> output = new ArrayList<Byte>();
+    try{
+      ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
+      DataOutputStream dataWriter = new DataOutputStream(outputBytes);
 
-    output.add((byte)this.timeStep);
+      dataWriter.writeInt(this.timeStep);
 
-    byte[] retval = new byte[output.size()];
-    for(int i = 0; i < retval.length; i++){
-      retval[i] = output.get(i);
+      map.serializeMap(dataWriter);
+
+      return outputBytes.toByteArray();
+    }catch(IOException e){
+      System.err.println("Unable to send data!!!");
+      return null;
     }
-    return retval;
   }
 
   @Override
   public void receive(byte[] data){
-    int otherTimeStep = (int)data[0];
-    System.out.println("Recieved data");
-    if(otherTimeStep > this.timeStep){
-      System.out.println("Updating timestep");
-      map.adjustTimes(this.timeStep, otherTimeStep);
-      this.timeStep = otherTimeStep;
+    try{
+      ByteArrayInputStream inputBytes = new ByteArrayInputStream(data);
+      DataInputStream dataReader = new DataInputStream(inputBytes);
+      int otherTimeStep = dataReader.readInt();
+      System.out.println("Recieved data");
+      if(otherTimeStep > this.timeStep){
+        System.out.println("Updating timestep");
+        map.adjustTimes(this.timeStep, otherTimeStep);
+        this.timeStep = otherTimeStep;
+      }
+      WorldMap otherMap = new WorldMap(5);
+      otherMap.deserializeMap(dataReader);
+      System.out.println("Recieved map:\n" + map);
+    }catch(IOException e){
+      System.err.println("Unable to recieve data!!!");
     }
   }
 
