@@ -91,6 +91,15 @@ public class WorldMap{
                           timestep);
   }
 
+  public void adjustTimes(int previousStep, int newStep){
+    int difference = newStep - previousStep;
+    for(int y = 0; y < this.lastSeenTimeStep.length; y++){
+      for(int x = 0; x < this.lastSeenTimeStep[y].length; x++){
+        this.lastSeenTimeStep[y][x] += difference;
+      }
+    }
+  }
+
   /**
    * Actually updates the values of the many arrays that hold the information
    * about the world. 

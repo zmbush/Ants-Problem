@@ -3,6 +3,7 @@ import java.lang.Math;
 import java.util.ArrayDeque;
 import java.util.Stack;
 import java.util.Hashtable;
+import java.util.ArrayList;
 
 /**
  * This is an ant that maps the world around it to get a good idea where to
@@ -100,12 +101,26 @@ public class MappingAnt implements Ant{
 
   @Override
   public byte[] send(){
-    return null;
+    ArrayList<Byte> output = new ArrayList<Byte>();
+
+    output.add((byte)this.timeStep);
+
+    byte[] retval = new byte[output.size()];
+    for(int i = 0; i < retval.length; i++){
+      retval[i] = output.get(i);
+    }
+    return retval;
   }
 
   @Override
   public void receive(byte[] data){
-    //
+    int otherTimeStep = (int)data[0];
+    System.out.println("Recieved data");
+    if(otherTimeStep > this.timeStep){
+      System.out.println("Updating timestep");
+      map.adjustTimes(this.timeStep, otherTimeStep);
+      this.timeStep = otherTimeStep;
+    }
   }
 
   /**
