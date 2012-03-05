@@ -84,11 +84,10 @@ public class WorldMap{
 
   public void adjustTimes(int previousStep, int newStep){
     int difference = newStep - previousStep;
-    for(int y = 0; y < this.lastSeenTimeStep.length; y++){
-      for(int x = 0; x < this.lastSeenTimeStep[y].length; x++){
-        this.lastSeenTimeStep[y][x] += difference;
-      }
-    }
+    for(int y = 0; y < this.lastSeenTimeStep.length; y++)
+      for(int x = 0; x < this.lastSeenTimeStep[y].length; x++)
+        if(this.lastSeenTimeStep[y][x] >= 0)
+          this.lastSeenTimeStep[y][x] += difference;
   }
 
 
