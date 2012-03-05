@@ -8,7 +8,7 @@ all: $(addsuffix .class, $(ANTS))
 
 html: $(addsuffix .java, $(ANTS)) $(addsuffix .java, $(AUX))
 	@echo Creating JavaDoc Files
-	@javadoc -private -classpath '.:lib/ants.jar' $^ -d html
+	@javadoc -private -classpath .:lib/ants.jar $^ -d html
 
 %.class: %.java $(CLASSDIR)
 	@echo Compiling $< to $@

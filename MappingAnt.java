@@ -295,8 +295,6 @@ public class MappingAnt implements Ant{
         for(Move successor : successors){
           PartialPlan newPlan = consider.planWithMove(successor);
           fringe.add(newPlan);
-          if(debug)
-            System.out.println("Pushed: " + newPlan);
         }
       }
     }
@@ -344,5 +342,4 @@ public class MappingAnt implements Ant{
       return a;
     }
   }
-
 }
