@@ -86,6 +86,9 @@ public class MappingAnt implements Ant{
       }
     }
 
+    if(plan == null){
+      plan = intoTheUnknownPlan();
+    }
     // Start performing the next action. 
     Action nextMove = plan.pop();
     
@@ -126,15 +129,15 @@ public class MappingAnt implements Ant{
       ByteArrayInputStream inputBytes = new ByteArrayInputStream(data);
       DataInputStream dataReader = new DataInputStream(inputBytes);
       int otherTimeStep = dataReader.readInt();
-      System.out.println("Recieved data");
+      // System.out.println("Recieved data");
       if(otherTimeStep > this.timeStep){
-        System.out.println("Updating timestep");
+        // System.out.println("Updating timestep");
         map.adjustTimes(this.timeStep, otherTimeStep);
         this.timeStep = otherTimeStep;
       }
-      WorldMap otherMap = new WorldMap(5);
+      WorldMap otherMap = new WorldMap();
       otherMap.deserializeMap(dataReader);
-      System.out.println("Recieved map:\n" + map);
+      // System.out.println("Recieved map:\n" + map);
     }catch(IOException e){
       System.err.println("Unable to recieve data!!!");
     }
@@ -281,6 +284,20 @@ public class MappingAnt implements Ant{
     });
   }
 
+  private ArrayDeque<Action> intoTheUnknownPlan(){
+    return searchForGoal(new SearchGoal(){
+      @Override
+      public boolean isGoal(Position p){
+        return map.nextToUnknown(p.getX(), p.getY());
+      }
+
+      @Override
+      public String planName(){
+        return "the unknown";
+      }
+    });
+  }
+
   /**
    * This is the generic function that drives the searching algorithm. We pass
    * in a SearchGoal, which is either looking for food, or for the anthill, and
@@ -334,11 +351,15 @@ public class MappingAnt implements Ant{
     // The fringe is exhausted, so we choose a random direction from our list of
     // possible directions.
     System.out.println("No path to " + g.planName() + " found. Using fallback");
-    ArrayDeque<Action> backup = new ArrayDeque<Action>();
-    Move[] p = map.getPossibleMoves(x, y, hasFood);
-    int index = (int)(Math.random() * p.length);
-    backup.add(p[index].getAction());
-    return backup;
+    if(g.planName().equals("the unknown")){
+      ArrayDeque<Action> backup = new ArrayDeque<Action>();
+      Move[] p = map.getPossibleMoves(x, y, hasFood);
+      int index = (int)(Math.random() * p.length);
+      backup.add(p[index].getAction());
+      return backup;
+    }else{
+      return null;
+    }
   }
 
   /**

@@ -81,6 +81,23 @@ public class WorldMap{
     this.centery = size / 2;
   }
 
+  public boolean nextToUnknown(int x, int y){
+    int cx = x + centerx;
+    int cy = y + centery;
+    if(cx < 0 || cy < 0) return true;
+    if(cx >= this.walls[0].length || cy >= this.walls.length) return true;
+    if(!validPosition(x-1, y)) return true;
+    if(!validPosition(x+1, y)) return true;
+    if(!validPosition(x, y-1)) return true;
+    if(!validPosition(x, y+1)) return true;
+    if(this.lastSeenTimeStep[cy][cx - 1] < 0) return true;
+    if(this.lastSeenTimeStep[cy][cx + 1] < 0) return true;
+    if(this.lastSeenTimeStep[cy - 1][cx] < 0) return true;
+    if(this.lastSeenTimeStep[cy + 1][cx] < 0) return true;
+
+    return false;
+
+  }
 
   public void adjustTimes(int previousStep, int newStep){
     int difference = newStep - previousStep;
