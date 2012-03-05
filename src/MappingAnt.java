@@ -137,7 +137,10 @@ public class MappingAnt implements Ant{
       }
       WorldMap otherMap = new WorldMap();
       otherMap.deserializeMap(dataReader);
-      // System.out.println("Recieved map:\n" + map);
+      otherMap.adjustTimes(otherTimeStep, this.timeStep);
+      // System.out.println("Map before merging:\n" + map);
+      map.mergeInto(otherMap);
+      // System.out.println("Map after merging:\n" + map);
     }catch(IOException e){
       System.err.println("Unable to recieve data!!!");
     }

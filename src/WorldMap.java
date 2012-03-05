@@ -59,6 +59,9 @@ public class WorldMap{
     System.out.println(testWorld);
   }
 
+  /**
+   * Constructs a map that starts at 20x20.
+   */
   WorldMap(){
     this(20);
   }
@@ -81,6 +84,14 @@ public class WorldMap{
     this.centery = size / 2;
   }
 
+  /**
+   * Determines if a given position is next to a position about which we have no
+   * information. Such squares are either outside the arrays, or marked with a
+   * -1 in lastSeenTimeStep.
+   *  @param x The x distance from the anthill
+   *  @param y The y distance from the anthill. 
+   *  @return Wether or not the position is next to an unknown position.
+   */
   public boolean nextToUnknown(int x, int y){
     int cx = x + centerx;
     int cy = y + centery;
@@ -99,6 +110,12 @@ public class WorldMap{
 
   }
 
+  /**
+   * Adjusts all the lastSeenTimeSteps to correspond to a new timestep recieved
+   * from another ant. 
+   * @param previousStep What the current time steps are based on.
+   * @param newStep what the time steps should be based on.
+   */
   public void adjustTimes(int previousStep, int newStep){
     int difference = newStep - previousStep;
     for(int y = 0; y < this.lastSeenTimeStep.length; y++)
@@ -107,7 +124,35 @@ public class WorldMap{
           this.lastSeenTimeStep[y][x] += difference;
   }
 
+  public void mergeInto(WorldMap otherMap){
+    for(int y = 0; y < otherMap.lastSeenTimeStep.length; y++){
+      for(int x = 0; x < otherMap.lastSeenTimeStep[y].length; x++){
+        int myx = x - otherMap.centerx + centerx;
+        int myy = y - otherMap.centery + centery;
+        int ts = otherMap.lastSeenTimeStep[y][x];
+        if(validPosition(x - otherMap.centerx, y - otherMap.centery)){
+          if(ts > this.lastSeenTimeStep[myy][myx]){
+            updateMap(x - otherMap.centerx, y - otherMap.centery, 
+                      otherMap.walls[y][x],
+                      otherMap.foodAmounts[y][x],
+                      otherMap.foodAmounts[y][x],
+                      ts);
+          }
+        }else{
+          updateMap(x - otherMap.centerx, y - otherMap.centery, 
+                    otherMap.walls[y][x],
+                    otherMap.foodAmounts[y][x],
+                    otherMap.foodAmounts[y][x],
+                    ts);
+        }
+      }
+    }
+  }
 
+  /**
+   * This writes the current map to an output stream for sending to another ant. 
+   * @param dataWriter The DataOutputStream we are writing to.
+   */
   public void serializeMap(DataOutputStream dataWriter) throws IOException{
     dataWriter.writeInt(this.walls.length);
     dataWriter.writeInt(this.walls[0].length);
@@ -123,6 +168,11 @@ public class WorldMap{
     }
   }
 
+  /**
+   * This reads a map from serialized data. This is a map that we have recieved
+   * from another ant. 
+   * @param dataReader The DataInputStream we are reading from.
+   */
   public void deserializeMap(DataInputStream dataReader) throws IOException{
     int height = dataReader.readInt();
     int width = dataReader.readInt();
