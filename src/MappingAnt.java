@@ -22,6 +22,11 @@ public class MappingAnt implements Ant{
   private boolean hasFood = false;
 
   /**
+   * The master ant assigns roles to other ants.
+   */
+  private boolean isMaster = true;
+
+  /**
    * This is the current timestep, as far as this ant is concerned.
    */
   private int timeStep = 0;
@@ -65,47 +70,61 @@ public class MappingAnt implements Ant{
     updateSurroundings(surroundings);
     // System.out.println(map);
 
-    this.timeStep++;
+    if(this.timeStep == 0){
+      this.timeStep++;
+      return this.makeMove(map.getPossibleMoves(x, y, this.hasFood)[0].getAction());
+    }
 
-    // If we are on a food square, pick it up and start to travel back home.
-    if(!hasFood && map.getFood(x, y) > 0 && (x != 0 || y != 0)){
+    if(this.isMaster){
+      System.out.println("MASTER ANT!!!");
       plan = deliverFoodPlan();
-      return this.makeMove(Action.GATHER);
-    }
-
-    // If we are at the anthill, drop off our food and look for more food.
-    if(hasFood && x == 0 && y == 0){
-      plan = findFoodPlan();
-      return this.makeMove(Action.DROP_OFF);
-    }
-
-    // If we don't currently have a plan, construct one.
-    if(plan == null || plan.isEmpty()){
-      if(!hasFood){
-        plan = findFoodPlan();
-      }else{
-        plan = deliverFoodPlan();
-      }
-    }
-
-    if(plan == null){
-      plan = intoTheUnknownPlan();
-    }
-    // Start performing the next action. 
-    Action nextMove = plan.pop();
-    
-    // Ensure that we can indeed make this move. 
-    if(map.validMove(nextMove, x, y, hasFood)){
-      return this.makeMove(nextMove);
+      if(plan == null || plan.isEmpty())
+        return this.makeMove(Action.HALT);
+      else
+        return this.makeMove(plan.pop());
     }else{
-      // We should never get here.
-      System.out.println("Plan attempted an invalid move. (" + x + ", " + y +
-                         ") " + nextMove.getDirection());
-      System.out.println(map);
-      System.out.println();
-      System.exit(0);
+      this.timeStep++;
+
+      // If we are on a food square, pick it up and start to travel back home.
+      if(!hasFood && map.getFood(x, y) > 0 && (x != 0 || y != 0)){
+        plan = deliverFoodPlan();
+        return this.makeMove(Action.GATHER);
+      }
+
+      // If we are at the anthill, drop off our food and look for more food.
+      if(hasFood && x == 0 && y == 0){
+        plan = findFoodPlan();
+        return this.makeMove(Action.DROP_OFF);
+      }
+
+      // If we don't currently have a plan, construct one.
+      if(plan == null || plan.isEmpty()){
+        if(!hasFood){
+          plan = findFoodPlan();
+        }else{
+          plan = deliverFoodPlan();
+        }
+      }
+
+      if(plan == null){
+        plan = intoTheUnknownPlan();
+      }
+      // Start performing the next action. 
+      Action nextMove = plan.pop();
+      
+      // Ensure that we can indeed make this move. 
+      if(map.validMove(nextMove, x, y, hasFood)){
+        return this.makeMove(nextMove);
+      }else{
+        // We should never get here.
+        System.out.println("Plan attempted an invalid move. (" + x + ", " + y +
+                           ") " + nextMove.getDirection());
+        System.out.println(map);
+        System.out.println();
+        System.exit(0);
+      }
+      return null;
     }
-		return null;
   }
 
   @Override
@@ -113,6 +132,8 @@ public class MappingAnt implements Ant{
     try{
       ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
       DataOutputStream dataWriter = new DataOutputStream(outputBytes);
+      
+      dataWriter.writeInt(this.hashCode());
 
       dataWriter.writeInt(this.timeStep);
 
@@ -130,6 +151,13 @@ public class MappingAnt implements Ant{
     try{
       ByteArrayInputStream inputBytes = new ByteArrayInputStream(data);
       DataInputStream dataReader = new DataInputStream(inputBytes);
+
+      int otherIndex = dataReader.readInt();
+
+      if(otherIndex < this.hashCode()){
+        this.isMaster = false;
+      }
+
       int otherTimeStep = dataReader.readInt();
       // System.out.println("Recieved data");
       if(otherTimeStep > this.timeStep){
