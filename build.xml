@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<project name="Ants" basedir="." default="compile">
+  <target name="clean" description="Delete all generated files">
+    <delete dir="classes" />
+  </target>
+
+  <target name="compile" description="Compiles the files">
+    <javac srcdir="src" destdir="classes" classpath="lib/ants.jar" />
+  </target>
+</project>
