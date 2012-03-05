@@ -2,9 +2,18 @@
 <project name="Ants" basedir="." default="compile">
   <target name="clean" description="Delete all generated files">
     <delete dir="classes" />
+    <delete dir="html" />
   </target>
 
   <target name="compile" description="Compiles the files">
-    <javac srcdir="src" destdir="classes" classpath="lib/ants.jar" />
+    <mkdir dir="classes" />
+    <javac srcdir="src" destdir="classes" classpath="lib/ants.jar"
+           includeantruntime="false"/>
+  </target>
+
+  <target name='html' description="Creates the JavaDoc html files">
+    <mkdir dir="html" />
+    <javadoc sourcefiles="src/MappingAnt.java,src/Position.java,src/Move.java" 
+             destdir="html" classpath="src:lib/ants.jar" access="private"/>
   </target>
 </project>
