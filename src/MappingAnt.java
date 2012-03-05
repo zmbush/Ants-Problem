@@ -24,12 +24,18 @@ public class MappingAnt implements Ant{
   /**
    * The master ant assigns roles to other ants.
    */
-  private boolean isMaster = true;
+  private boolean isMaster = false;
 
+  private boolean isScout = false;
+
+  private boolean deliveringKnowledge = false;
+  private boolean impartedKnowledge = true;
   /**
    * This is the current timestep, as far as this ant is concerned.
    */
   private int timeStep = 0;
+
+  private int actionsTaken = 0;
 
   /**
    * The x distance from the anthill
@@ -71,8 +77,20 @@ public class MappingAnt implements Ant{
     // System.out.println(map);
 
     if(this.timeStep == 0){
-      this.timeStep++;
+      if(!this.isMaster){
+        if(this.hashCode() % 10 == 0){
+          this.isScout = true;
+        }
+      }
+    }
+
+    this.timeStep++;
+    this.actionsTaken++;
+
+    if(this.timeStep == 1){
       return this.makeMove(map.getPossibleMoves(x, y, this.hasFood)[0].getAction());
+    }else if(this.timeStep == 2){
+      return this.makeMove(deliverFoodPlan().pop());
     }
 
     if(this.isMaster){
@@ -82,9 +100,21 @@ public class MappingAnt implements Ant{
         return this.makeMove(Action.HALT);
       else
         return this.makeMove(plan.pop());
-    }else{
-      this.timeStep++;
+    }else if(this.isScout){
+      System.out.println("Scout!");
 
+      if(this.actionsTaken % 50 == 0){
+        plan = deliverFoodPlan();
+        this.isScout = false;
+      }
+      if(plan == null || plan.isEmpty())
+        plan = intoTheUnknownPlan();
+      if(plan == null){
+        this.isScout = false;
+        plan = deliverFoodPlan();
+      }
+      return this.makeMove(plan.pop());
+    }else{
       // If we are on a food square, pick it up and start to travel back home.
       if(!hasFood && map.getFood(x, y) > 0 && (x != 0 || y != 0)){
         plan = deliverFoodPlan();
@@ -130,6 +160,7 @@ public class MappingAnt implements Ant{
   @Override
   public byte[] send(){
     try{
+      this.impartedKnowledge = true;
       ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
       DataOutputStream dataWriter = new DataOutputStream(outputBytes);
       
@@ -154,9 +185,6 @@ public class MappingAnt implements Ant{
 
       int otherIndex = dataReader.readInt();
 
-      if(otherIndex < this.hashCode()){
-        this.isMaster = false;
-      }
 
       int otherTimeStep = dataReader.readInt();
       // System.out.println("Recieved data");
