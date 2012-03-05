@@ -275,16 +275,15 @@ public class WorldMap{
       this.antAmounts = newAnts;
       this.lastSeenTimeStep = newSeen;
       
-      // Recalculate internal coordinates.
-      xcoord = x + centerx;
-      ycoord = y + centery;
+      // Try to update again.
+      this.updateMap(x, y, wall, food, ants, timestep);
+    }else{
+      // Set the values of the world.
+      this.walls[ycoord][xcoord] = wall;
+      this.foodAmounts[ycoord][xcoord] = food;
+      this.antAmounts[ycoord][xcoord] = ants;
+      this.lastSeenTimeStep[ycoord][xcoord] = timestep;
     }
-
-    // Set the values of the world.
-    this.walls[ycoord][xcoord] = wall;
-    this.foodAmounts[ycoord][xcoord] = food;
-    this.antAmounts[ycoord][xcoord] = ants;
-    this.lastSeenTimeStep[ycoord][xcoord] = timestep;
   }
 
   /**

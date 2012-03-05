@@ -8,6 +8,8 @@ import java.io.DataOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * This is an ant that maps the world around it to get a good idea where to
@@ -336,6 +338,7 @@ public class MappingAnt implements Ant{
       Move[] successors = map.getPossibleMoves(consider.getX(), 
                                                consider.getY(),
                                                hasFood);
+      Collections.shuffle(Arrays.asList(successors));
       // We make sure that the current position hasn't been considered yet, and
       // if it has, we continue to the next one.
       if(closedSet.put(consider.getPosition(), true) == null){
