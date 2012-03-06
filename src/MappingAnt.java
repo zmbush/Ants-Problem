@@ -74,7 +74,6 @@ public class MappingAnt implements Ant{
     // surroundings. We want to make sure that we have the most up to date
     // information in the map. 
     updateSurroundings(surroundings);
-    // System.out.println(map);
 
     // Every ant starts out life as a scout. 
     if(this.timeStep == 0){
@@ -134,7 +133,8 @@ public class MappingAnt implements Ant{
       if(map.validMove(nextMove, x, y, hasFood)){
         return this.makeMove(nextMove);
       }else{
-        // We should never get here.
+        // This would mean that a plan sent us into a wall, which should never
+        // happen.
         System.out.println("Plan attempted an invalid move. (" + x + ", " + y +
                            ") " + nextMove.getDirection());
         System.out.println(map);
