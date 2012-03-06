@@ -47,6 +47,7 @@ public class WorldMap{
   WorldMap(){
     this(20);
   }
+  
   /**
    * Primary constructor. Initializes all necessary variables to their
    * appropriate sizes. 
