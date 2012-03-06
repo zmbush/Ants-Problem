@@ -22,19 +22,19 @@ public class MappingAnt implements Ant{
   private boolean hasFood = false;
 
   /**
-   * The master ant assigns roles to other ants.
+   * The scout ant searches into the unknown.
    */
-  private boolean isMaster = false;
-
   private boolean isScout = false;
 
-  private boolean deliveringKnowledge = false;
-  private boolean impartedKnowledge = true;
   /**
    * This is the current timestep, as far as this ant is concerned.
    */
   private int timeStep = 0;
 
+  /**
+   * This is the number of actions that the given ant has taken. Similar to
+   * timestep, but does not get modified when we talk to other ants.
+   */
   private int actionsTaken = 0;
 
   /**
@@ -76,39 +76,25 @@ public class MappingAnt implements Ant{
     updateSurroundings(surroundings);
     // System.out.println(map);
 
+    // Every ant starts out life as a scout. 
     if(this.timeStep == 0){
-      if(!this.isMaster){
-        if(this.hashCode() % 10 == 0){
-          this.isScout = true;
-        }
-      }
+      this.isScout = true;
     }
 
     this.timeStep++;
     this.actionsTaken++;
 
-    if(this.timeStep == 1){
-      return this.makeMove(map.getPossibleMoves(x, y, this.hasFood)[0].getAction());
-    }else if(this.timeStep == 2){
-      return this.makeMove(deliverFoodPlan().pop());
-    }
-
-    if(this.isMaster){
-      System.out.println("MASTER ANT!!!");
-      plan = deliverFoodPlan();
-      if(plan == null || plan.isEmpty())
-        return this.makeMove(Action.HALT);
-      else
-        return this.makeMove(plan.pop());
-    }else if(this.isScout){
-      System.out.println("Scout!");
-
-      if(this.actionsTaken % 50 == 0){
-        plan = deliverFoodPlan();
+    if(this.isScout){
+      // After 20 turns, scouts turn back into gatherers
+      if(this.actionsTaken == 20){
+        plan = findFoodPlan();
         this.isScout = false;
       }
+
+      // If our current plan is empty, make a new one.
       if(plan == null || plan.isEmpty())
         plan = intoTheUnknownPlan();
+
       if(plan == null){
         this.isScout = false;
         plan = deliverFoodPlan();
@@ -136,9 +122,11 @@ public class MappingAnt implements Ant{
         }
       }
 
+      // If we can't find what we want, just investigate unknown areas.
       if(plan == null){
         plan = intoTheUnknownPlan();
       }
+
       // Start performing the next action. 
       Action nextMove = plan.pop();
       
@@ -157,17 +145,20 @@ public class MappingAnt implements Ant{
     }
   }
 
+  /**
+   * Sends data about the current ant, his timestep, and his map.
+   * @return A byte array of the data we are sending.
+   */
   @Override
   public byte[] send(){
     try{
-      this.impartedKnowledge = true;
       ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
       DataOutputStream dataWriter = new DataOutputStream(outputBytes);
       
-      dataWriter.writeInt(this.hashCode());
-
+      // Send the timestamp
       dataWriter.writeInt(this.timeStep);
 
+      // Send my map
       map.serializeMap(dataWriter);
 
       return outputBytes.toByteArray();
@@ -177,28 +168,38 @@ public class MappingAnt implements Ant{
     }
   }
 
+  /**
+   * Reads the data recieved from another ant, and updates his information
+   * accordingly. 
+   * @param data The byte array constructed by the other ant's send().
+   */
   @Override
   public void receive(byte[] data){
     try{
       ByteArrayInputStream inputBytes = new ByteArrayInputStream(data);
       DataInputStream dataReader = new DataInputStream(inputBytes);
 
-      int otherIndex = dataReader.readInt();
-
-
       int otherTimeStep = dataReader.readInt();
-      // System.out.println("Recieved data");
+      
+      // Make sure everyone's timesteps are aligned. 
       if(otherTimeStep > this.timeStep){
-        // System.out.println("Updating timestep");
         map.adjustTimes(this.timeStep, otherTimeStep);
         this.timeStep = otherTimeStep;
       }
+
+      // Load the other ant's map. 
       WorldMap otherMap = new WorldMap();
       otherMap.deserializeMap(dataReader);
+
+      // Make it match your timestep.
       otherMap.adjustTimes(otherTimeStep, this.timeStep);
-      // System.out.println("Map before merging:\n" + map);
+      
+      // Add the information from the other ant into the current map. 
       map.mergeInto(otherMap);
-      // System.out.println("Map after merging:\n" + map);
+
+      // Force a new plan (we assume that we will get new information from
+      // mergeInto()
+      this.plan = null;
     }catch(IOException e){
       System.err.println("Unable to recieve data!!!");
     }
@@ -225,11 +226,21 @@ public class MappingAnt implements Ant{
   ///////////////////////////////////////////////////////////
   
   /**
-   * This is used to define the two different search goals. It makes it so we
+   * This is used to define the three different search goals. It makes it so we
    * can define a single search function
    */
   private interface SearchGoal{
+    /**
+     * This is the goal test.
+     * @param p The current position of the ant.
+     * @return true if the current position is at a goal state.
+     */
     public boolean isGoal(Position p);
+
+    /**
+     * This simply returns an identifying string. Used to determine which
+     * SearchGoal we are using
+     */
     public String planName();
   }
 
@@ -345,10 +356,16 @@ public class MappingAnt implements Ant{
     });
   }
 
+  /**
+   * This plan is the fallback plan if the ant is unable to find food. It
+   * searches for an area that has not been explored before. 
+   * @return The steps to get to an unexplored square.
+   */
   private ArrayDeque<Action> intoTheUnknownPlan(){
     return searchForGoal(new SearchGoal(){
       @Override
       public boolean isGoal(Position p){
+        // If we are next to an unknown position, then we have reached our goal.
         return map.nextToUnknown(p.getX(), p.getY());
       }
 
@@ -410,10 +427,12 @@ public class MappingAnt implements Ant{
       }
     }
 
-    // The fringe is exhausted, so we choose a random direction from our list of
-    // possible directions.
-    System.out.println("No path to " + g.planName() + " found. Using fallback");
-    if(g.planName().equals("the unknown")){
+    // The only plan that can't return null is the unknown search.
+    if(g.planName().equals("the unknown") && false){
+      // The fringe is exhausted, so we choose a random direction from our list 
+      // of possible directions.
+      System.out.println("No path to " + g.planName() + 
+                         " found. Using fallback");
       ArrayDeque<Action> backup = new ArrayDeque<Action>();
       Move[] p = map.getPossibleMoves(x, y, hasFood);
       int index = (int)(Math.random() * p.length);

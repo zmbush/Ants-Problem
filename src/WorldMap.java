@@ -33,31 +33,13 @@ public class WorldMap{
    * The center in the x direction. Our coordinate system will take an input of
    * (0, 0) to be the center of the grid.
    */
-  private int centerx;
+  private int xCenter;
  
   /**
    * The center in the y direction. Our coordinate system will take an input of
    * (0, 0) to be the center of the grid.
    */
-  private int centery;
-
-  /**
-   * Test Procedure. 
-   * @param argv Command line arguments
-   */
-  public static void main(String[] argv){
-    WorldMap testWorld = new WorldMap(20);
-    testWorld.updateMap(0, 0, true, 0, 0, 0);
-    testWorld.updateMap(0, 1, false, 1, 0, 0);
-    testWorld.updateMap(1, 1, false, 0, 0, 0);
-    testWorld.updateMap(1, 0, false, 0, 0, 0);
-    testWorld.updateMap(1, -1, false, 0, 0, 0);
-    testWorld.updateMap(0, -1, false, 0, 0, 0);
-    testWorld.updateMap(-1, -1, false, 0, 0, 0);
-    testWorld.updateMap(-1, 0, false, 0, 0, 0);
-    testWorld.updateMap(-1, 1, false, 0, 0, 0);
-    System.out.println(testWorld);
-  }
+  private int yCenter;
 
   /**
    * Constructs a map that starts at 20x20.
@@ -80,8 +62,8 @@ public class WorldMap{
     this.walls = new boolean[size][size];
     this.foodAmounts = new int[size][size];
     this.antAmounts = new int[size][size];
-    this.centerx = size / 2;
-    this.centery = size / 2;
+    this.xCenter = size / 2;
+    this.yCenter = size / 2;
   }
 
   /**
@@ -93,8 +75,8 @@ public class WorldMap{
    *  @return Wether or not the position is next to an unknown position.
    */
   public boolean nextToUnknown(int x, int y){
-    int cx = x + centerx;
-    int cy = y + centery;
+    int cx = x + xCenter;
+    int cy = y + yCenter;
     if(cx < 0 || cy < 0) return true;
     if(cx >= this.walls[0].length || cy >= this.walls.length) return true;
     if(!validPosition(x-1, y)) return true;
@@ -124,22 +106,32 @@ public class WorldMap{
           this.lastSeenTimeStep[y][x] += difference;
   }
 
+  /**
+   * Takes the information from otherMap, and if the other map's timestep is
+   * greater than the current one, we update that square. Otherwise we leave it
+   * as is. 
+   * @param otherMap The world map that we are mergeng into this one.
+   */
   public void mergeInto(WorldMap otherMap){
+    // Loop over every entry in the arrays of the other map
     for(int y = 0; y < otherMap.lastSeenTimeStep.length; y++){
       for(int x = 0; x < otherMap.lastSeenTimeStep[y].length; x++){
-        int myx = x - otherMap.centerx + centerx;
-        int myy = y - otherMap.centery + centery;
+        int myx = x - otherMap.xCenter + xCenter;
+        int myy = y - otherMap.yCenter + yCenter;
         int ts = otherMap.lastSeenTimeStep[y][x];
-        if(validPosition(x - otherMap.centerx, y - otherMap.centery)){
+
+        // If it is a valid position (within our current arrays), then we want
+        // to check the timestep. Otherwise, we can just call update.
+        if(validPosition(x - otherMap.xCenter, y - otherMap.yCenter)){
           if(ts > this.lastSeenTimeStep[myy][myx]){
-            updateMap(x - otherMap.centerx, y - otherMap.centery, 
+            updateMap(x - otherMap.xCenter, y - otherMap.yCenter, 
                       otherMap.walls[y][x],
                       otherMap.foodAmounts[y][x],
                       otherMap.foodAmounts[y][x],
                       ts);
           }
         }else{
-          updateMap(x - otherMap.centerx, y - otherMap.centery, 
+          updateMap(x - otherMap.xCenter, y - otherMap.yCenter, 
                     otherMap.walls[y][x],
                     otherMap.foodAmounts[y][x],
                     otherMap.foodAmounts[y][x],
@@ -156,8 +148,8 @@ public class WorldMap{
   public void serializeMap(DataOutputStream dataWriter) throws IOException{
     dataWriter.writeInt(this.walls.length);
     dataWriter.writeInt(this.walls[0].length);
-    dataWriter.writeInt(this.centerx);
-    dataWriter.writeInt(this.centery);
+    dataWriter.writeInt(this.xCenter);
+    dataWriter.writeInt(this.yCenter);
     for(int y = 0; y < this.lastSeenTimeStep.length; y++){
       for(int x = 0; x < this.lastSeenTimeStep[y].length; x++){
         dataWriter.writeInt(this.lastSeenTimeStep[y][x]);
@@ -176,8 +168,8 @@ public class WorldMap{
   public void deserializeMap(DataInputStream dataReader) throws IOException{
     int height = dataReader.readInt();
     int width = dataReader.readInt();
-    this.centerx = dataReader.readInt();
-    this.centery = dataReader.readInt();
+    this.xCenter = dataReader.readInt();
+    this.yCenter = dataReader.readInt();
     this.lastSeenTimeStep = new int[height][width];
     this.walls = new boolean[height][width];
     this.foodAmounts = new int[height][width];
@@ -222,8 +214,8 @@ public class WorldMap{
   public void updateMap(int x, int y, boolean wall, int food, int ants, 
                         int timestep){
     // Convert the coordinates to our internal representation. 
-    int xcoord = x + centerx;
-    int ycoord = y + centery;
+    int xcoord = x + xCenter;
+    int ycoord = y + yCenter;
 
     // If a coordinate is outside the range addressible, we must resize
     if(xcoord < 0 || ycoord < 0 || 
@@ -250,8 +242,8 @@ public class WorldMap{
       int newy = size/2;
 
       // Calculate the difference between the center, for easier copying.
-      int difx = newx - this.centerx;
-      int dify = newy - this.centery;
+      int difx = newx - this.xCenter;
+      int dify = newy - this.yCenter;
 
       // Copy data from old arrays
       for(int yp = 0; yp < this.walls.length; yp++){
@@ -268,8 +260,8 @@ public class WorldMap{
       }
 
       // Reassign variables to the new values
-      this.centerx = newx;
-      this.centery = newy;
+      this.xCenter = newx;
+      this.yCenter = newy;
       this.walls = newWalls;
       this.foodAmounts = newFood;
       this.antAmounts = newAnts;
@@ -294,8 +286,8 @@ public class WorldMap{
    * @return An array of possible moves for the ant
    */
   public Move[] getPossibleMoves(int x, int y, boolean hasFood){
-    int xc = x + centerx;
-    int yc = y + centery;
+    int xc = x + xCenter;
+    int yc = y + yCenter;
 
     ArrayList<Move> retval = new ArrayList<Move>();
 
@@ -327,7 +319,7 @@ public class WorldMap{
    */
   public int getFood(int x, int y){
     if(validPosition(x,y)){
-      return this.foodAmounts[y + centery][x + centerx];
+      return this.foodAmounts[y + yCenter][x + xCenter];
     }else{
       return 0;
     }
@@ -341,8 +333,8 @@ public class WorldMap{
    * @return If the coordinates lie within the internal arrays.
    */
   private boolean validPosition(int x, int y){
-    int cx = x + centerx;
-    int cy = y + centery;
+    int cx = x + xCenter;
+    int cy = y + yCenter;
 
     if(cx < 0) return false;
     if(cy < 0) return false;
@@ -361,8 +353,8 @@ public class WorldMap{
    * @return Wether or not the ant will be able to make this action
    */
   public boolean validMove(Action a, int x, int y, boolean hasFood){
-    int cx = x + centerx;
-    int cy = y + centery;
+    int cx = x + xCenter;
+    int cy = y + yCenter;
 
     if(!validPosition(x, y)) return false;
 
@@ -436,7 +428,7 @@ public class WorldMap{
         boolean wall = wallRow[x];
         int food = foodRow[x];
         int ant = antRow[x];
-        if(x == centerx && y == centery){
+        if(x == xCenter && y == yCenter){
           retval += "AH";
         }else if(wall){
           retval += "##";
