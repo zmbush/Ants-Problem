@@ -1,6 +1,6 @@
 .PHONY: all clean html
 
-ANTS := SimpleAnt MappingAnt
+ANTS := MappingAnt
 AUX := Position Move
 CLASSDIR := ./
 
