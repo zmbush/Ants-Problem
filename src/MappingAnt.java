@@ -24,7 +24,7 @@ public class MappingAnt implements Ant{
   /**
    * The scout ant searches into the unknown.
    */
-  private boolean isScout = false;
+  private boolean isScout = true;
 
   /**
    * This is the current timestep, as far as this ant is concerned.
@@ -74,11 +74,6 @@ public class MappingAnt implements Ant{
     // surroundings. We want to make sure that we have the most up to date
     // information in the map. 
     updateSurroundings(surroundings);
-
-    // Every ant starts out life as a scout. 
-    if(this.timeStep == 0){
-      this.isScout = true;
-    }
 
     this.timeStep++;
     this.actionsTaken++;
