@@ -14,7 +14,7 @@
   <target name='html' description="Creates the JavaDoc html files">
     <mkdir dir="html" />
     <javadoc
-    sourcefiles="src/MappingAnt.java,src/Position.java,src/Move.java,src/WorldMap.java" 
+    sourcefiles="src/MappingAnt.java,src/Position.java,src/Move.java,src/WorldMap.java,src/RadiusAnt.java" 
              destdir="html" classpath="src:lib/ants.jar" access="private"/>
   </target>
 </project>

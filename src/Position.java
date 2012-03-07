@@ -72,4 +72,11 @@ public class Position{
   public int hashCode(){
     return (x*17) ^ y;
   }
+
+  /**
+   * Returns the manhattan distance from the other point.
+   */
+  public int manhattanDistance(Position other){
+    return Math.abs(this.x - other.x) + Math.abs(this.y - other.y);
+  }
 }
