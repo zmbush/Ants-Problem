@@ -24,7 +24,7 @@ public class RadiusAnt implements Ant{
   /**
    * The scout ant searches into the unknown.
    */
-  private boolean isScout = true;
+  private boolean isScout = false;
 
   /**
    * This is the current timestep, as far as this ant is concerned.
@@ -61,6 +61,9 @@ public class RadiusAnt implements Ant{
    */
   private ArrayDeque<Action> plan;
 
+  private Position anthill = new Position(0,0);
+
+  private int radius = 40;
   /**
    * This is the subroutine to get the action for the ant to take. It returns an
    * action based on its current plan. This operation is very quick unless the
@@ -78,6 +81,11 @@ public class RadiusAnt implements Ant{
     this.timeStep++;
     this.actionsTaken++;
 
+    if(this.actionsTaken > 30){
+      if(this.radius > 0 && this.actionsTaken % 10 == 0){
+        this.radius -= 1;
+      }
+    }
     if(this.isScout){
       // After 20 turns, scouts turn back into gatherers
       if(this.actionsTaken == 20){
@@ -95,14 +103,16 @@ public class RadiusAnt implements Ant{
       }
       return this.makeMove(plan.pop());
     }else{
+      Position here = new Position(x, y);
+
       // If we are on a food square, pick it up and start to travel back home.
-      if(!hasFood && map.getFood(x, y) > 0 && (x != 0 || y != 0)){
+      if(!hasFood && map.getFood(x, y) > 0 && anthill.manhattanDistance(here) > radius){
         plan = deliverFoodPlan();
         return this.makeMove(Action.GATHER);
       }
 
       // If we are at the anthill, drop off our food and look for more food.
-      if(hasFood && x == 0 && y == 0){
+      if(hasFood && anthill.manhattanDistance(here) <= radius){
         plan = findFoodPlan();
         return this.makeMove(Action.DROP_OFF);
       }
@@ -117,9 +127,19 @@ public class RadiusAnt implements Ant{
       }
 
       // If we can't find what we want, just investigate unknown areas.
-      if(plan == null){
+      if(plan == null || plan.isEmpty()){ 
         plan = intoTheUnknownPlan();
       }
+
+      while(plan == null){
+        if(!hasFood){
+          plan = findFoodPlan();
+        }else{
+          plan = deliverFoodPlan();
+        }
+        radius--;
+      }
+
 
       // Start performing the next action. 
       Action nextMove = plan.pop();
@@ -321,7 +341,7 @@ public class RadiusAnt implements Ant{
         // We have reached the goal when we have a position with food that is
         // not the anthill.
         return (map.getFood(p.getX(), p.getY()) > 0 && 
-                           (p.getX() != 0 || p.getY() != 0));
+                           anthill.manhattanDistance(p) > radius);
       }
 
       @Override
@@ -340,8 +360,10 @@ public class RadiusAnt implements Ant{
     return searchForGoal(new SearchGoal(){
       @Override
       public boolean isGoal(Position p){
-        // We have reached the goal when we have returned to the anthill.
-        return (p.getX() == 0 && p.getY() == 0);
+        return (anthill.manhattanDistance(p) <= radius && 
+                (Math.abs(p.getX()) < 5 ||
+                Math.abs(p.getY()) < 5)
+                );
       }
 
       @Override
